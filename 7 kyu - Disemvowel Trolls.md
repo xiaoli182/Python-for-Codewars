@@ -52,7 +52,7 @@ def disemvowel(string):
 #	   因此必须进行 str = str.replace() 操作
 
 # 更为简洁的方式是：
-def disemvomel(string):
+def disemvowel(string):
     for i in 'aoeiuAOEIU':
         string = string.replace(i, '')
     return string
@@ -74,7 +74,7 @@ def disemvowel(string):
     return string.translate(translator)
 
 # 以下是另外一种可行的形式
-def disemvomel(string):
+def disemvowel(string):
     return string.translate(str.maketrans('','','aeiouAEIOU'))
 
 # 以下二者等价
@@ -119,7 +119,7 @@ def disemvowel(string):
     return ''.join(c for c in string if c.lower() not in 'aeiou')
 
 # 这种方式有一个讨论是：是否使用lower()
-def disemvomel(string):
+def disemvowel(string):
     return ''.join(c for c in string if c not in 'aeiouAEIOU')
 ```
 
@@ -129,7 +129,83 @@ def disemvomel(string):
 
 **以下是对不同方法的耗时分析：**
 
-暂且搁置
+```python
+import time
 
+def disemvowel1(string):
+    start_time = time.time()
+    translator = str.maketrans({key: None for key in "aeiouAEIOU"})
+    string = string.translate(translator)
+    print('方法1用时：')
+    print(time.time() - start_time)
 
+def disemvowel2(string):
+    start_time = time.time()
+    string = string.translate(str.maketrans('','','aeiouAEIOU'))
+    print('方法2用时：')
+    print(time.time() - start_time)
 
+def disemvowel3(string):
+    start_time = time.time()
+    string = ''.join(c for c in string if c not in 'aeiouAEIOU')
+    print('方法3用时：')
+    print(time.time() - start_time)
+
+def disemvowel4(string):
+    start_time = time.time()
+    string = ''.join(c for c in string if c.lower() not in 'aeiou')
+    print('方法4用时：')
+    print(time.time() - start_time)
+
+def disemvowel5(string):
+    start_time = time.time()
+    for i in 'aoeiuAOEIU':
+        string = string.replace(i, '')
+    print('方法5用时：')
+    print(time.time() - start_time)
+
+def disemvowel6(string):
+    start_time = time.time()
+    string2 = list(string)
+    string3 = []
+    test   = ['a', 'o', 'e', 'i', 'u', 'A', 'O', 'E', 'I', 'U']
+    for i in string2:
+        if i not in test:
+          string3.append(i)
+    string = ''.join(string3)
+    print('方法6用时：')
+    print(time.time() - start_time)
+
+sentence = "a"*(10**7) + "b"*(10**7) + "e"*(10**7)
+
+disemvowel1(sentence)
+disemvowel2(sentence)
+disemvowel3(sentence)
+disemvowel4(sentence)
+disemvowel5(sentence)
+disemvowel6(sentence)
+```
+
+输出结果为：
+
+```python
+方法1用时：
+0.04700016975402832
+方法2用时：
+0.04800009727478027
+方法3用时：
+1.5920000076293945
+方法4用时：
+3.301999807357788
+方法5用时：
+0.26600003242492676
+方法6用时：
+3.515000104904175
+```
+
+可以发现：
+
+- 用时最短的是使用 translate() 函数的方式，两种不同的调用方法相差的不是很大。
+- 其次用时短的是循环调用 replace() 函数的方式，可以看到使用 str 内置的函数效果很快。
+- 而其它的方法之所以会慢，是因为实现过程中**“先将字符串转换为列表，处理之后又将列表合并为字符串”**，因此应该避免这种操作，直接选择字符串函数会更快。
+- 最后可以发现，使用 lower() 函数会导致结果变慢。
